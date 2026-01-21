@@ -4,7 +4,7 @@ const DailyLog = require("../models/dailyLog.js");
 const router = express.Router();
 
 // POST /dailylogs
-// CREATE a daily log
+// Create a daily log
 router.post("/", verifyToken, async (req, res) => {
     try {
         req.body.userId = req.user._id;
@@ -18,7 +18,7 @@ router.post("/", verifyToken, async (req, res) => {
 });
 
 // GET /dailylogs
-// READ all daily logs
+// Read all daily logs
 router.get("/", verifyToken, async (req, res) => {
     try {
         const dailyLogs = await DailyLog.find({})
@@ -30,11 +30,11 @@ router.get("/", verifyToken, async (req, res) => {
     }
 });
 
-// READ - GET /dailylogs/:logId
-// READ a daily log
+// GET /dailylogs/:logId
+// Read a daily log
 router.get('/:logId', verifyToken, async (req, res) => {
     try {
-        // populate userId of dailyLog
+        // populate userId of a daily log
         const dailyLog = await DailyLog.findById(req.params.logId).populate('userId');
         res.status(200).json(dailyLog);
     } catch (err) {
@@ -43,10 +43,10 @@ router.get('/:logId', verifyToken, async (req, res) => {
 });
 
 // PUT /dailylogs/:logId
-// UPDATE a daily log
+// Update a daily log
 router.put("/:logId", verifyToken, async (req, res) => {
     try {
-        // Find the dailyLog:
+        // Find the daily log:
         const dailyLog = await DailyLog.findById(req.params.logId);
 
         // Check permissions:
@@ -54,7 +54,7 @@ router.put("/:logId", verifyToken, async (req, res) => {
             return res.status(403).send("You're not allowed to do that!");
         }
 
-        // Update dailyLog:
+        // Update daily log:
         const updatedDailyLog = await DailyLog.findByIdAndUpdate(
             req.params.logId,
             req.body,
@@ -71,9 +71,21 @@ router.put("/:logId", verifyToken, async (req, res) => {
     }
 });
 
+// DELETE /dailylogs/:logId
+// Delete a daily log
+router.delete("/:logId", verifyToken, async (req, res) => {
+    try {
+        const dailyLog = await DailyLog.findById(req.params.logId);
 
+        if (!dailyLog.userId.equals(req.user._id)) {
+            return res.status(403).send("You're not allowed to do that!");
+        }
 
-
-
+        const deletedDailyLog = await DailyLog.findByIdAndDelete(req.params.logId);
+        res.status(200).json(deletedDailyLog);
+    } catch (err) {
+        res.status(500).json({ err: err.message });
+    }
+});
 
 module.exports = router;
